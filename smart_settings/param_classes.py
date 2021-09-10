@@ -2,6 +2,7 @@ import collections
 from copy import deepcopy
 import json
 from .utils import removesuffix
+from .smart_settings import APPEND_TO_LIST_KEY
 
 
 class NoDuplicateDict(dict):
@@ -89,9 +90,9 @@ def update_recursive(d, u, overwrite=False):
         if isinstance(v, collections.abc.Mapping):
             d[k] = update_recursive(d.get(k, {}), v, overwrite)
         if isinstance(v, collections.abc.Sequence):
-            raw_key = removesuffix(k, '*')
-            if raw_key + "*" in d:  # append
-                d[raw_key + "*"] = deepcopy(v + d[raw_key + '*'])
+            raw_key = removesuffix(k, APPEND_TO_LIST_KEY)
+            if raw_key + APPEND_TO_LIST_KEY in d:  # append
+                d[raw_key + APPEND_TO_LIST_KEY] = deepcopy(v + d[raw_key + APPEND_TO_LIST_KEY])
             elif raw_key in d:  # keep original list
                 pass
             else:  # key does not exist yet, append

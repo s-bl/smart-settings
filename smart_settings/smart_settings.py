@@ -1,12 +1,15 @@
 from datetime import datetime
 import json
-from .param_classes import NoDuplicateDict, recursive_objectify, update_recursive
 from .dynamic import recursive_dynamic_json
 import collections.abc
 import yaml
 from .utils import removesuffix
+from .utils import map_nested_dicts
 
 IMPORT_KEY = '__import__'
+APPEND_TO_LIST_KEY = '+'
+
+from .param_classes import NoDuplicateDict, recursive_objectify, update_recursive
 
 
 def load_raw_dict_from_file(filename):
@@ -68,10 +71,8 @@ def loads(s, *, dynamic=True, make_immutable=False, recursive_imports=True,
 
 def _post_load(current_dict, dynamic, make_immutable, post_unpack_hooks):
     keys = list(current_dict.keys())  # to avoid that list of keys gets updated during loop
-    for key in keys:
-        if key.endswith("*") and isinstance(current_dict[key], collections.abc.Sequence):
-            raw_key = removesuffix(key, "*")
-            current_dict[raw_key] = current_dict.pop(key)
+
+    current_dict = map_nested_dicts(current_dict, lambda x: removesuffix(x, APPEND_TO_LIST_KEY))
 
     if dynamic:
         objectified = recursive_objectify(current_dict, make_immutable=False)
